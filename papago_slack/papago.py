@@ -11,7 +11,8 @@ def translate(text, from_lang, to_lang):
     payload = {
         'source': from_lang,
         'target': to_lang,
-        'text': text
+        'text': text,
+        'honorific': True
     }
 
     headers = {
