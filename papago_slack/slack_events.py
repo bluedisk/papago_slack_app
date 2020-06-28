@@ -39,7 +39,7 @@ def message_channels(event_data):
         return
 
     user = event['user']
-    if event['channel'] not in user.channels:
+    if event['channel'] not in user.papago.channels:
         return
 
     text = event["text"]
@@ -59,13 +59,13 @@ def message_channels(event_data):
     # translating
     if translated:
         new_text = "%s\n> %s" % (text, translated.replace("\n", "\n> "))
-        response = event['client'].chat_update(
+        event['client'].chat_update(
             channel=event["channel"], ts=event["ts"], text=new_text
         )
 
         TranslateLog.objects.create(
-            team=user.team,
-            user=user,
+            team=user.team.papago,
+            user=user.papago,
             length=len(text),
             from_lang=from_lang,
             to_lang=to_lang,

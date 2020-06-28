@@ -1,5 +1,9 @@
+from calendar import monthrange
+from datetime import date
+
 from annoying.fields import AutoOneToOneField
 from django.db import models
+from django.db.models import Sum
 
 from django_simple_slack_app.models import SlackUser, SlackTeam
 
@@ -33,6 +37,15 @@ class PapagoSlackTeam(models.Model):
     plan = models.ForeignKey("PapagoPlan", null=True, blank=True, on_delete=models.SET_NULL)
 
     active = models.BooleanField("Active?", default=True)
+
+    def monthly_usage(self):
+        today = date.today().year, date.today().month
+        __, ds = monthrange(*today)
+
+        query = TranslateLog.objects. \
+            filter(team=self, created_at__range=[date(*today, day=1), date(*today, day=ds)])
+
+        return query.count(), query.aggregate(letters=Sum('length'))['letters']
 
 
 class PapagoPlan(models.Model):

@@ -21,36 +21,50 @@ def papago_command(event_data):
         })
 
 
+@slack_commands.on("/papago.usage")
+def papago_command_team(event_data):
+    user = event_data['user']
+
+    count, letters = user.team.papago.monthly_usage()
+
+    requests.post(event_data['response_url'], json={
+        "text": f"Your team use {count} requests for {letters} letters in this month",
+        "response_type": "ephemeral"
+    })
+
+
 @slack_commands.on("/papago.on")
-def papago_command(event_data):
+def papago_command_on(event_data):
 
     if 'user' not in event_data:
         return
 
-    print("PAPAGO ON", event_data['user'].id, "in", event_data['channel_id'])
 
     user = event_data['user']
     user.papago.channels.append(event_data['channel_id'])
-    user.save()
+    user.papago.save()
 
     requests.post(event_data['response_url'], json={
         "text": "Papago will translate on this channel for you!",
         "response_type": "ephemeral"
     })
 
+    print("PAPAGO ON", event_data['user'].id, "in", event_data['channel_id'])
+
 
 @slack_commands.on("/papago.off")
-def papago_command(event_data):
+def papago_command_off(event_data):
     if 'user' not in event_data:
         return
 
-    print("PAPAGO OFF", event_data['user'].user, "in", event_data['channel_id'])
 
     user = event_data['user']
-    user.channels.remove(event_data['channel_id'])
-    user.save()
+    user.papago.channels.remove(event_data['channel_id'])
+    user.papago.save()
 
     requests.post(event_data['response_url'], json={
         "text": "Papago translation is off!",
         "response_type": "ephemeral"
     })
+
+    print("PAPAGO OFF", event_data['user'].user, "in", event_data['channel_id'])
