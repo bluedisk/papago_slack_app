@@ -12,6 +12,8 @@ slackeventsapi = "^2.1.0"
 hgtk = "^0.1.3"
 pyee = "^7.0.1"
 python-dotenv = "^0.12.0"
+psycopg2-binary = "2.8.5"
+django-annoying = "^0.10.6"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
