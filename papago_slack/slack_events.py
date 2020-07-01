@@ -1,3 +1,4 @@
+import re
 from pprint import pprint
 
 import hgtk
@@ -43,9 +44,10 @@ def message_channels(event_data):
         return
 
     text = event["text"]
+    checking_test = re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~]", "", text)
 
     # language checking
-    if hgtk.checker.is_latin1(text):
+    if hgtk.checker.is_latin1(checking_test):
         print("Translate %s characters to Korean" % len(text))
         from_lang = "en"
         to_lang = "ko"
