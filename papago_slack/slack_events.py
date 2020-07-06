@@ -1,9 +1,8 @@
+import hgtk
 import re
+from django_simple_slack_app import slack_events
 from pprint import pprint
 
-import hgtk
-
-from django_simple_slack_app import slack_events
 from . import papago
 from .models import TranslateLog
 
@@ -44,10 +43,27 @@ def message_channels(event_data):
         return
 
     text = event["text"]
-    checking_test = re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~]", "", text)
 
     # language checking
-    if hgtk.checker.is_latin1(checking_test):
+    latin1_count = 0
+    hangul_count = 0
+    hanja_count = 0
+    etc_count = 0
+    for c in re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~]", "", text):
+        if hgtk.checker.is_latin1(c):
+            latin1_count += 1
+        elif hgtk.checker.is_hangul(c):
+            hangul_count += 1
+        elif hgtk.checker.is_hanja(c):
+            hanja_count += 1
+        else:
+            etc_count += 1
+
+    letter_count = latin1_count + hangul_count + hanja_count
+    latin_rate = latin1_count / letter_count
+    hangul_rate = hangul_count / letter_count
+
+    if latin_rate >= hangul_rate:
         print("Translate %s characters to Korean" % len(text))
         from_lang = "en"
         to_lang = "ko"
