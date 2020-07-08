@@ -49,7 +49,12 @@ def message_channels(event_data):
     hangul_count = 0
     hanja_count = 0
     etc_count = 0
-    for c in re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~]", "", text):
+
+    # <!subteam^SRS1R1BNW|@frontend> 하고 계신 task jira에 업데이트 부탁드려요\n
+    cheking_text = re.sub(r"<!\w+\^[\w\d]+\|(@\w+)>", "", text)
+    cheking_text = re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~\n]", "", cheking_text)
+
+    for c in cheking_text:
         if hgtk.checker.is_latin1(c):
             latin1_count += 1
         elif hgtk.checker.is_hangul(c):
