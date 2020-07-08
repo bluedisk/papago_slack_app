@@ -24,10 +24,10 @@ def authorized(func):
     return wrapper
 
 
-def send_response(event_data, text):
+def send_response(event_data, text, response_type="ephemeral"):
     requests.post(event_data['response_url'], json={
         "text": text,
-        "response_type": "ephemeral"
+        "response_type": response_type
     })
 
 
@@ -93,3 +93,12 @@ def papago_command_off(event_data):
     send_response(event_data, "Papago translation is off!\n" +
                   "이 채널에서 파파고 번역을 정지합니다! 안되잖아... 안되...")
     print("PAPAGO OFF", event_data['user'].id, "in", event_data['channel_id'])
+
+
+@slack_commands.on("/papago.saysorry")
+@authorized
+def papago_command_off(event_data):
+    if 'user' not in event_data:
+        return
+
+    send_response(event_data, "죄송합니다... 앞으로 제대로 하겠습니다... :sob:", response_type="in_channel")
