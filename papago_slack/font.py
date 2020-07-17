@@ -109,18 +109,18 @@ def make_line(current_font, line):
         if pix:
             output.append(":pepelove:")
         else:
-            output.append("        ")
+            output.append(":white_square:")
 
     return "".join(output)
 
 
 def make_art(text):
     output = []
-    for line_idx in range(8):
+    for line_idx in range(5):
         one_line = []
         for c in text:
             idx = ord(c) - 32
-            one_line.append(make_line(font[idx], line_idx))
+            one_line.append(make_line(font[idx], line_idx+3))
         output.append(''.join(one_line))
 
     return '\n'.join(output)

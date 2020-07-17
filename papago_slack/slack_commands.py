@@ -3,6 +3,8 @@ from django_simple_slack_app import slack_commands
 from functools import wraps
 from pprint import pprint
 
+from papago_slack.font import make_art
+
 
 def authorized(func):
     @wraps(func)
@@ -117,6 +119,6 @@ def papago_blaming(event_data):
     if 'user' not in event_data:
         return
 
-    pepe_art = make_art(event_data['text'])
+    pepe_art = make_art(event_data['text'][5:])
 
-    send_response(event_data, pepe_art)
+    send_response(event_data, pepe_art, response_type="in_channel")

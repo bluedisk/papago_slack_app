@@ -42,7 +42,8 @@ def message_channels(event_data):
     if event['channel'] not in user.papago.channels:
         return
 
-    translated = traslate(event["text"]) if event["text"] != 'GC' else 'Genius Confirmed! (but not that genius like YOGI)'
+    text = event["text"]
+    translated = translate(text) if text != 'GC' else 'Genius Confirmed! (but not that genius like YOGI)'
 
     # translating
     if translated:
