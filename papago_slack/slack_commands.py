@@ -1,9 +1,7 @@
+import requests
+from django_simple_slack_app import slack_commands
 from functools import wraps
 from pprint import pprint
-
-import requests
-
-from django_simple_slack_app import slack_commands
 
 
 def authorized(func):
@@ -97,8 +95,28 @@ def papago_command_off(event_data):
 
 @slack_commands.on("/papago.saysorry")
 @authorized
-def papago_command_off(event_data):
+def papago_saysorry(event_data):
     if 'user' not in event_data:
         return
 
     send_response(event_data, "죄송합니다... 앞으로 제대로 하겠습니다... :sob:", response_type="in_channel")
+
+
+@slack_commands.on("/papago.blaming")
+@authorized
+def papago_blaming(event_data):
+    if 'user' not in event_data:
+        return
+
+    send_response(event_data, "아.. 이런 시부렁 못해먹겠네... :expressionless:", response_type="in_channel")
+
+
+@slack_commands.on("/papago.pepe")
+@authorized
+def papago_blaming(event_data):
+    if 'user' not in event_data:
+        return
+
+    pepe_art = make_art(event_data['text'])
+
+    send_response(event_data, pepe_art)

@@ -42,15 +42,31 @@ def message_channels(event_data):
     if event['channel'] not in user.papago.channels:
         return
 
-    text = event["text"]
+    translated = traslate(event["text"]) if event["text"] != 'GC' else 'Genius Confirmed! (but not that genius like YOGI)'
 
+    # translating
+    if translated:
+        new_text = "%s\n> %s" % (text, translated.replace("\n", "\n> "))
+        event['client'].chat_update(
+            channel=event["channel"], ts=event["ts"], text=new_text
+        )
+
+        TranslateLog.objects.create(
+            team=user.team.papago,
+            user=user.papago,
+            length=len(text),
+            from_lang=from_lang,
+            to_lang=to_lang,
+        )
+
+
+def translate(text):
     # language checking
     latin1_count = 0
     hangul_count = 0
     hanja_count = 0
     etc_count = 0
 
-    # <!subteam^SRS1R1BNW|@frontend> 하고 계신 task jira에 업데이트 부탁드려요\n
     cheking_text = re.sub(r"<!\w+\^[\w\d]+\|(@\w+)>", "", text)
     cheking_text = re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~\n]", "", cheking_text)
 
@@ -77,19 +93,4 @@ def message_channels(event_data):
         from_lang = "ko"
         to_lang = "en"
 
-    translated = papago.translate(text, from_lang, to_lang)
-
-    # translating
-    if translated:
-        new_text = "%s\n> %s" % (text, translated.replace("\n", "\n> "))
-        event['client'].chat_update(
-            channel=event["channel"], ts=event["ts"], text=new_text
-        )
-
-        TranslateLog.objects.create(
-            team=user.team.papago,
-            user=user.papago,
-            length=len(text),
-            from_lang=from_lang,
-            to_lang=to_lang,
-        )
+    return papago.translate(text, from_lang, to_lang)
