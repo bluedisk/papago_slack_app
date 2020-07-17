@@ -25,6 +25,15 @@ def on_event_app_home_opened(user):
     pprint(user)
 
 
+CUSTOM_DICTIONARY = {
+    'GC': 'Genius Confirmed! (but not that genius like YOGI)',
+    'BYT': '치아관리를 시작하도록 하십시오',
+    'ND': '나도~~!!!!',
+    'GD': '편의점 가자!',
+    '파파고': '왜!',
+}
+
+
 @slack_events.on("message")
 def message_channels(event_data):
     pprint(event_data)
@@ -43,7 +52,7 @@ def message_channels(event_data):
         return
 
     text = event["text"]
-    translated = translate(text) if text != 'GC' else 'Genius Confirmed! (but not that genius like YOGI)'
+    translated = CUSTOM_DICTIONARY[text] if text in CUSTOM_DICTIONARY else translate(text)
 
     # translating
     if translated:
