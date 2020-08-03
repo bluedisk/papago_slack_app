@@ -81,7 +81,7 @@ def recognize_language(text: str) -> (str, str):
     hanja_count = 0
     etc_count = 0
 
-    text = re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~\n]", "", text)
+    text = re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~\n\xa0]", "", text)
 
     for c in text:
         if hgtk.checker.is_latin1(c):

@@ -55,3 +55,8 @@ class ParserTestCase(TestCase):
         text = papago.desanitize(extra_list, text)
         self.assertEqual(text, "파파고 <@UFGQX1QFK>  바보 <https://google.com> 다람쥐 :smirk:")
 
+    def text_language_detection(self):
+        from_lang, to_lang = papago.recognize_language('파파고\xa0<@UFGQX1QFK>\xa0\xa0바보\xa0<https://google.com>\xa0다람쥐\xa0:smirk:')
+        self.assertEqual(from_lang, 'ko')
+        self.assertEqual(from_lang, 'en')
+
