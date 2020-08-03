@@ -12,8 +12,10 @@ PAPAGO_ENDPOINT = 'https://naveropenapi.apigw.ntruss.com/nmt/v1/translation'
 EXTRA_FIELD_NAME_FOR_TYPE = {
     'text': ('text', '{}'),
     'user': ('user_id', '<@{}>'),
+    'channel': ('channel_id', '<#{}>'),
     'link': ('url', '<{}>'),
     'emoji': ('name', ':{}:'),
+    'broadcast': ('range', '<!{}>')
 }
 
 CUSTOM_DICTIONARY = {
