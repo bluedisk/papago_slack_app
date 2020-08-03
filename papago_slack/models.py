@@ -31,12 +31,18 @@ class PapagoSlackUser(models.Model):
     user = AutoOneToOneField(SlackUser, on_delete=models.CASCADE, related_name='papago')
     channels = ChannelsField("활성화된 채널들", default=[], null=False, blank=True)
 
+    def __str__(self):
+        return f"{self.user.id}"
+
 
 class PapagoSlackTeam(models.Model):
     team = AutoOneToOneField(SlackTeam, on_delete=models.CASCADE, related_name='papago')
     plan = models.ForeignKey("PapagoPlan", null=True, blank=True, on_delete=models.SET_NULL)
 
     active = models.BooleanField("Active?", default=True)
+
+    def __str__(self):
+        return f"{self.team}"
 
     def monthly_usage(self):
         today = date.today().year, date.today().month

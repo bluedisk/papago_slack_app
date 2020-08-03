@@ -72,8 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'papago_slack.wsgi.application'
 
-# import .env
-load_dotenv(verbose=DEBUG)
+load_dotenv(dotenv_path='.env', verbose=DEBUG)
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
@@ -94,6 +93,9 @@ else:
             'PASSWORD': os.getenv('DATABASE_PASSWORD'),
             'HOST': os.getenv('DATABASE_HOST'),
             'PORT': '5432',
+            'TEST': {
+                'NAME': 'test'
+            }
         }
     }
 
