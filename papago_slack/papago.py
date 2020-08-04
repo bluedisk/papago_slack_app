@@ -84,9 +84,9 @@ def sanitize_text(text: str) -> (List[str], str):
         return f"[{len(extras)}]"
 
     element_re = re.compile(r'(<(([!@#](subteam\^)?(channel|here|[A-Z0-9]+))|'
-                            r'(https?://[\w_.?&=%/-]+))(|.+?)?>)|(:\w+?:)')
+                            r'(https?://[\w_.?&=%/-]+))(|.+?)?>)|(:\w+?:)|(`.+?`)')
 
-    return extras, element_re.sub(bracketize, text), element_re.sub("", text)
+    return extras, element_re.sub(bracketize, text), extract_letters(element_re.sub("", text))
 
 
 def extract_letters(text):

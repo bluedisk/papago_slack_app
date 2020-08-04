@@ -57,7 +57,7 @@ BLOCKS1 = """
       """
 
 TEXT1="""<!subteam^SRS1R1BNW|@frontend> it's a test in <!here> for <https://google.com|test>
-if you know about <@UFGQX1QFK> or <#C0166CJGQ2F|test2> please talk to me :smirk:
+if you know about <@UFGQX1QFK> or <#C0166CJGQ2F|test2> please talk to me :smirk: and `test code`
 """
 
 class ParserTestCase(TestCase):
@@ -76,15 +76,17 @@ class ParserTestCase(TestCase):
         self.assertEqual(text, "파파고 <@UFGQX1QFK>  바보 <https://google.com> 다람쥐 :smirk:<#C0166CJGQ2F><!here>")
 
     def test_text_sanitizing(self):
-        extras, text = papago.sanitize_text(TEXT1)
-        self.assertEqual(text, "[1] it's a test in [2] for [3]\nif you know about [4] or [5] please talk to me [6]\n")
+        extras, text, letters = papago.sanitize_text(TEXT1)
+        self.assertEqual(text, "[1] it's a test in [2] for [3]\nif you know about [4] or [5] please talk to me [6] and [7]\n")
+        self.assertEqual(letters, "itsatestinforifyouknowaboutorpleasetalktomeand")
         self.assertListEqual(extras, [
             "<!subteam^SRS1R1BNW|@frontend>",
             "<!here>",
             "<https://google.com|test>",
             "<@UFGQX1QFK>",
             "<#C0166CJGQ2F|test2>",
-            ':smirk:'
+            ':smirk:',
+            '`test code`'
         ])
 
         text = papago.desanitize(text, extras)
