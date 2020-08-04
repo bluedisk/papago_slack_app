@@ -47,8 +47,14 @@ def message_channels(event_data):
     original_text = event["text"]
     original_blocks = event["blocks"]
 
-    block_dict, sanitized_text = papago.sanitize(original_blocks)
-    from_lang, to_lang = papago.recognize_language(sanitized_text)
+    extras, sanitized_text, letters = papago.sanitize_text(original_text)
+
+    letters = papago.extract_letters(letters)
+    if len(letters.strip()) == 0:
+        print("skip translate for [", letters, "]")
+        return
+
+    from_lang, to_lang = papago.recognize_language(letters)
     translated = papago.custom_translate(sanitized_text)
 
     if not translated:
@@ -56,7 +62,7 @@ def message_channels(event_data):
         translated = papago.translate(sanitized_text, from_lang, to_lang)
         print(from_lang, to_lang, translated)
 
-    translated = papago.desanitize(block_dict, translated)
+    translated = papago.desanitize(translated, extras)
 
     # translating
     if translated:

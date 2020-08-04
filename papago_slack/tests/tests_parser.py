@@ -1,5 +1,7 @@
 import json
+
 from django.test import TestCase
+
 from papago_slack import papago
 
 # def sanitize(blocks: dict) -> (List[str], str):
@@ -54,10 +56,13 @@ BLOCKS1 = """
       }]
       """
 
+TEXT1="""<!subteam^SRS1R1BNW|@frontend> it's a test in <!here> for <https://google.com|test>
+if you know about <@UFGQX1QFK> or <#C0166CJGQ2F|test2> please talk to me :smirk:
+"""
 
 class ParserTestCase(TestCase):
-    def test_sanitizing(self):
-        extra_list, text = papago.sanitize(json.loads(BLOCKS1))
+    def test_block_sanitizing(self):
+        extra_list, text = papago.sanitize_block(json.loads(BLOCKS1))
         self.assertEqual(text, "파파고 [1]  바보 [2] 다람쥐 [3][4][5]")
         self.assertListEqual(extra_list, [
             ('user', 'UFGQX1QFK'),
@@ -67,8 +72,23 @@ class ParserTestCase(TestCase):
             ('broadcast', 'here')
         ])
 
-        text = papago.desanitize(extra_list, text)
+        text = papago.desanitize(text, elements=extra_list)
         self.assertEqual(text, "파파고 <@UFGQX1QFK>  바보 <https://google.com> 다람쥐 :smirk:<#C0166CJGQ2F><!here>")
+
+    def test_text_sanitizing(self):
+        extras, text = papago.sanitize_text(TEXT1)
+        self.assertEqual(text, "[1] it's a test in [2] for [3]\nif you know about [4] or [5] please talk to me [6]\n")
+        self.assertListEqual(extras, [
+            "<!subteam^SRS1R1BNW|@frontend>",
+            "<!here>",
+            "<https://google.com|test>",
+            "<@UFGQX1QFK>",
+            "<#C0166CJGQ2F|test2>",
+            ':smirk:'
+        ])
+
+        text = papago.desanitize(text, extras)
+        self.assertEqual(text, TEXT1)
 
     def text_language_detection(self):
         from_lang, to_lang = papago.recognize_language('파파고\xa0<@UFGQX1QFK>\xa0\xa0바보\xa0<https://google.com>\xa0다람쥐\xa0:smirk:')

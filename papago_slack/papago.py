@@ -50,9 +50,9 @@ def translate(text, from_lang, to_lang):
     return json.loads(res.content)['message']['result']['translatedText']
 
 
-def sanitize(blocks: dict) -> (List[str], str):
+def sanitize_block(blocks: dict) -> (List[str], str):
     text = ""
-    extra_list = []
+    extras = []
     extra_idx = 0
 
     for block in blocks:
@@ -63,9 +63,9 @@ def sanitize(blocks: dict) -> (List[str], str):
                 if etype == 'text':
                     text += element['text']
                 elif etype in EXTRA_FIELD_NAME_FOR_TYPE:
-                    text += f"[{extra_idx+1}]"
+                    text += f"[{extra_idx + 1}]"
                     field_name, _ = EXTRA_FIELD_NAME_FOR_TYPE[etype]
-                    extra_list.append((etype, element[field_name]))
+                    extras.append((etype, element[field_name]))
                     extra_idx += 1
                 else:
                     with open("exceptions.txt", "a") as f:
@@ -73,7 +73,24 @@ def sanitize(blocks: dict) -> (List[str], str):
                         f.write("\n\n")
                     pass
 
-    return extra_list, text
+    return extras, text
+
+
+def sanitize_text(text: str) -> (List[str], str):
+    extras = []
+
+    def bracketize(match):
+        extras.append(match.group())
+        return f"[{len(extras)}]"
+
+    element_re = re.compile(r'(<(([!@#](subteam\^)?(channel|here|[A-Z0-9]+))|'
+                            r'(https?://[\w_.?&=%/-]+))(|.+?)?>)|(:\w+?:)')
+
+    return extras, element_re.sub(bracketize, text), element_re.sub("", text)
+
+
+def extract_letters(text):
+    return re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\{}|\-_+=`~\n\xa00-9]", "", text)
 
 
 def recognize_language(text: str) -> (str, str):
@@ -83,9 +100,7 @@ def recognize_language(text: str) -> (str, str):
     hanja_count = 0
     etc_count = 0
 
-    text = re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\\{\}|\-_+=`~\n\xa0]", "", text)
-
-    for c in text:
+    for c in extract_letters(text):
         if hgtk.checker.is_latin1(c):
             latin1_count += 1
         elif hgtk.checker.is_hangul(c):
@@ -116,14 +131,16 @@ def custom_translate(sanitized_text: str) -> str:
     return ""
 
 
-def desanitize(extra_list: List[str], translated: str) -> str:
+def desanitize(translated: str, extras=None, elements: List[str] = None) -> str:
     r = re.compile(r'\[([0-9]{1,2})]')
 
-    def replace_dict(match: Match[AnyStr]) -> AnyStr:
-        extra_idx = int(match.groups()[0])
-        etype, value = extra_list[extra_idx-1]
-        _, value_format = EXTRA_FIELD_NAME_FOR_TYPE[etype]
+    if not extras and elements:
+        extras = []
+        for etype, value in elements:
+            _, value_format = EXTRA_FIELD_NAME_FOR_TYPE[etype]
+            extras.append(value_format.format(value))
 
-        return value_format.format(value)
+    def replace_dict(match: Match[AnyStr]) -> AnyStr:
+        return extras[int(match.groups()[0]) - 1]
 
     return r.sub(replace_dict, translated)
