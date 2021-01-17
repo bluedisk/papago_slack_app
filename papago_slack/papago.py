@@ -4,8 +4,45 @@ import re
 from pprint import pprint
 from typing import AnyStr, Match, List
 
-import hgtk
+import fasttext
 import requests
+
+model = fasttext.load_model('lid.176.bin')
+
+LANG_CODE = {
+    '독일어': 'de',
+    '러시아어': 'ru',
+    '베트남어': 'vi',
+    '스페인어': 'es',
+    '영어': 'en',
+    '이탈리아어': 'it',
+    '인도네시아어': 'id',
+    '일본어': 'ja',
+    '중국어 간체': 'zh-CN',
+    '중국어 번체': 'zh-TW',
+    '태국어': 'th',
+    '프랑스어': 'fr',
+    '한국어': 'ko'
+}
+
+TRANS_TABLE = {
+    'de': ['ko'],
+    'en': ['ja', 'zh-CN', 'zh-TW', 'fr', 'ko'],
+    'es': ['ko'],
+    'fr': ['en', 'ko'],
+    'id': ['ko'],
+    'it': ['ko'],
+    'ja': ['en', 'zh-CN', 'zh-TW', 'ko'],
+    'ko': ['de', 'ru', 'vi', 'es', 'en', 'it', 'id', 'ja', 'zh-CN', 'zh-TW', 'th', 'fr'],
+    'ru': ['ko'],
+    'th': ['ko'],
+    'vi': ['ko'],
+    'zh-CN': ['en', 'ja', 'zh-TW', 'ko'],
+    'zh-TW': ['en', 'ja', 'zh-CN', 'ko'],
+}
+
+DEFAULT_PRIMARY_CODE = 'ko'
+DEFAULT_SECONDARY_CODE = 'en'
 
 PAPAGO_ENDPOINT = 'https://naveropenapi.apigw.ntruss.com/nmt/v1/translation'
 
@@ -43,7 +80,7 @@ def translate(text, from_lang, to_lang):
     res = requests.post(PAPAGO_ENDPOINT, data=payload, headers=headers)
 
     if res.status_code != 200:
-        print("[PAPAGO] error on ", text)
+        print(f"[PAPAGO] error on '{text}' : {res.text} ")
         pprint(res)
         return None
 
@@ -90,38 +127,34 @@ def sanitize_text(text: str) -> (List[str], str):
 
 
 def extract_letters(text):
-    return re.sub(r"[ !@#$%^&*()<>?,./;':\"\[\]\\{}|\-_+=`~\n\xa00-9]", "", text)
+    return re.sub(r'[ !@#$%^&*()<>?,./;\':"\[\]\\{}|\-_+=`~\n\xa00-9]', "", text)
 
 
 def recognize_language(text: str) -> (str, str):
     # language checking
-    latin1_count = 0
-    hangul_count = 0
-    hanja_count = 0
-    etc_count = 0
 
-    for c in extract_letters(text):
-        if hgtk.checker.is_latin1(c):
-            latin1_count += 1
-        elif hgtk.checker.is_hangul(c):
-            hangul_count += 1
-        elif hgtk.checker.is_hanja(c):
-            hanja_count += 1
-        else:
-            etc_count += 1
+    from_codes, _ = model.predict(text, k=2)
+    candi_major, candi_minor = [code[-2:] for code in from_codes]
+    print(f"I] from code is {candi_major}, {candi_minor} : {text}")
+    from_code = candi_major
 
-    letter_count = latin1_count + hangul_count + hanja_count
-    latin_rate = latin1_count / letter_count
-    hangul_rate = hangul_count / letter_count
+    if from_code == 'zh':
+        from_code = 'zh-TN'
 
-    if latin_rate >= hangul_rate:
-        from_lang = "en"
-        to_lang = "ko"
+    if from_code == DEFAULT_PRIMARY_CODE:
+        to_code = DEFAULT_SECONDARY_CODE
     else:
-        from_lang = "ko"
-        to_lang = "en"
+        to_code = DEFAULT_PRIMARY_CODE
 
-    return from_lang, to_lang
+        if from_code not in TRANS_TABLE.keys():
+            print(f"E] wrong origin language {candi_major}, fallback to {candi_minor}")
+            from_code = candi_minor
+
+            if from_code not in TRANS_TABLE.keys():
+                print(f"E] wrong origin language {candi_major}, changed to {DEFAULT_SECONDARY_CODE}")
+                from_code = DEFAULT_SECONDARY_CODE
+
+    return from_code, to_code
 
 
 def custom_translate(sanitized_text: str) -> str:

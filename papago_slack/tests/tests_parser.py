@@ -1,5 +1,5 @@
 import json
-
+from langdetect import detect
 from django.test import TestCase
 
 from papago_slack import papago
@@ -92,8 +92,37 @@ class ParserTestCase(TestCase):
         text = papago.desanitize(text, extras)
         self.assertEqual(text, TEXT1)
 
-    def text_language_detection(self):
+    def test_language_detection_with_format(self):
         from_lang, to_lang = papago.recognize_language('파파고\xa0<@UFGQX1QFK>\xa0\xa0바보\xa0<https://google.com>\xa0다람쥐\xa0:smirk:')
         self.assertEqual(from_lang, 'ko')
+        self.assertEqual(to_lang, 'en')
+
+    def test_language_detection(self):
+        from_lang, to_lang = papago.recognize_language('영어도 있지만 한국어 test 입니다.')
+        self.assertEqual(from_lang, 'ko')
+        self.assertEqual(to_lang, 'en')
+
+        from_lang, to_lang = papago.recognize_language("It's an english sentence")
         self.assertEqual(from_lang, 'en')
+        self.assertEqual(to_lang, 'kr')
+
+        from_lang, to_lang = papago.recognize_language("中文翻譯不是很順利")
+        self.assertEqual(from_lang, 'zh')
+        self.assertEqual(to_lang, 'kr')
+
+        from_lang, to_lang = papago.recognize_language("T, tapi aku akan Hol ywood.-Siapa nama Anda?")
+        self.assertEqual(from_lang, 'id')
+        self.assertEqual(to_lang, 'kr')
+
+        from_lang, to_lang = papago.recognize_language("あなたのお名前は何ですか？")
+        self.assertEqual(from_lang, 'jp')
+        self.assertEqual(to_lang, 'kr')
+
+        from_lang, to_lang = papago.recognize_language("Tên anh là gì?")
+        self.assertEqual(from_lang, 'te')
+        self.assertEqual(to_lang, 'kr')
+
+        from_lang, to_lang = papago.recognize_language("Как вас зовут?")
+        self.assertEqual(from_lang, 'ru')
+        self.assertEqual(to_lang, 'kr')
 

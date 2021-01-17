@@ -29,7 +29,7 @@ class ChannelsField(models.TextField):
 
 class PapagoSlackUser(models.Model):
     user = AutoOneToOneField(SlackUser, on_delete=models.CASCADE, related_name='papago')
-    channels = ChannelsField("활성화된 채널들", default=[], null=False, blank=True)
+    channels = ChannelsField("Activated Channel IDs", default=[], null=False, blank=True)
 
     def __str__(self):
         return f"{self.user.id}"

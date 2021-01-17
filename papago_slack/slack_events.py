@@ -1,3 +1,4 @@
+import json
 from pprint import pprint
 
 from django_simple_slack_app import slack_events
@@ -23,14 +24,27 @@ def on_event_app_home_opened(user):
     pprint(user)
 
 
+class SlackEncoder(json.JSONEncoder):
+    def default(self, obj):
+        try:
+            return json.JSONEncoder.default(self, obj)
+        except TypeError:
+            return str(obj)
+
+
 @slack_events.on("message")
 def message_channels(event_data):
-    pprint(event_data)
     event = event_data["event"]
+    if "previous_message" in event:
+        return
 
     # event type checking
-    if "text" not in event or "bot_id" in event or "subtype" in event:
-        print("no text or bot_id or it's a subtype")
+    if "text" not in event or "bot_id" in event:
+        print("no text or has bot_id or it's a duplicated message")
+
+        with open("failed_detail.json", "ta") as f:
+            f.write(json.dumps(event_data, cls=SlackEncoder))
+
         return
 
     # auth check user
@@ -45,29 +59,35 @@ def message_channels(event_data):
         return
 
     original_text = event["text"]
-    original_blocks = event["blocks"]
+    # original_blocks = event["blocks"]
 
+    # sanitizing text
     extras, sanitized_text, letters = papago.sanitize_text(original_text)
     if len(letters) == 0:
         print("skip translate for 0 length text")
         return
 
-    from_lang, to_lang = papago.recognize_language(letters)
+    # translate
+    from_lang, to_lang = papago.recognize_language(original_text)
     translated = papago.custom_translate(sanitized_text)
 
     if not translated:
-        print(from_lang, to_lang, sanitized_text)
+        pprint(["TRANS FROM", from_lang, to_lang, sanitized_text])
         translated = papago.translate(sanitized_text, from_lang, to_lang)
-        print(from_lang, to_lang, translated)
+        pprint(["TRANS TO", from_lang, to_lang, translated])
 
-    translated = papago.desanitize(translated, extras)
-
-    # translating
+    # response
     if translated:
+        translated = papago.desanitize(translated, extras)
+
         new_text = "%s\n> %s" % (original_text, translated.replace("\n", "\n> "))
-        event['client'].chat_update(
-            channel=event["channel"], ts=event["ts"], text=new_text
-        )
+
+        try:
+            event['client'].chat_update(
+                channel=event["channel"], ts=event["ts"], text=new_text
+            )
+        except Exception as e:
+            pprint(e)
 
         TranslateLog.objects.create(
             team=user.team.papago,

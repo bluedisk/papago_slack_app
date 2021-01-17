@@ -26,7 +26,7 @@ SECRET_KEY = 'dtqbt@1)@b9)ub&bfe3_ksl^y7f4i#8dv$yn$452dri!l45c@%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("ENV") != "production"
 
-ALLOWED_HOSTS = ["slack.eggpang.net",  "papago.eggpang.net"]
+ALLOWED_HOSTS = ["yangpago.com"]
 
 # Application definition
 
