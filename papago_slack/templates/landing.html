@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contents %}
+    <main class="yangpago">
+        <img class="mb-4" src="{% static '/logo/yangpago.png' %}" alt="" width="300" height="300">
+
+        <h1 class="h3 mb-2 fw-normal">Hi! I'm Yangpago!</h1>
+        <p>
+            <a href="https://papago.naver.com/" class="papago">Papago</a> powered AI translator for Slack
+        </p>
+
+        <a href="{% url 'install' %}">
+            <img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png"
+                 srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x">
+        </a>
+
+        <p class="mt-2 mb-3 text-muted">&copy; 2020</p>
+    </main>
+{% endblock %}
