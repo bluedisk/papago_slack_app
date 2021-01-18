@@ -5,6 +5,24 @@ from django_simple_slack_app import slack_events
 from . import papago
 from .models import TranslateLog
 
+LANG_PREFIX = {
+    'de': ':flag-de: ',
+    'ru': ':flag-ru: ',
+    'vi': ':flag-vi: ',
+    'es': ':flag-es: ',
+    'en': ':flag-us: ',
+    'it': ':flag-it: ',
+    'id': ':flag-id: ',
+    'ja': ':flag-jp: ',
+    'th': ':flag-th: ',
+    'fr': ':flag-fr: ',
+    'ko': ':flag-kr: ',
+    'zh-CN': ':cn: ',
+    'zh-TW': ':cn: ',
+}
+
+DEFAULT_LANG_PREFIX = ':open_mouth: '
+
 
 @slack_events.on("error")
 def on_event_error(error):
@@ -78,9 +96,9 @@ def message_channels(event_data):
 
     # response
     if translated:
-        translated = papago.desanitize(translated, extras)
-
-        new_text = "%s\n> %s" % (original_text, translated.replace("\n", "\n> "))
+        translated = papago.desanitize(translated, extras).replace("\n", "\n> ")
+        prefix = LANG_PREFIX.get(from_lang, DEFAULT_LANG_PREFIX)
+        new_text = f'{original_text}\n> {prefix}{translated}'
 
         try:
             event['client'].chat_update(

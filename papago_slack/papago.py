@@ -139,7 +139,7 @@ def recognize_language(text: str) -> (str, str):
     from_code = candi_major
 
     if from_code == 'zh':
-        from_code = 'zh-TN'
+        from_code = 'zh-TW'
 
     if from_code == DEFAULT_PRIMARY_CODE:
         to_code = DEFAULT_SECONDARY_CODE
