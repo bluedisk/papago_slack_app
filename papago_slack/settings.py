@@ -14,8 +14,21 @@ import os
 
 from dotenv import load_dotenv
 
+# Sentry integration
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+sentry_sdk.init(
+    dsn="https://9e4c3e47ad074cdb976818b32c4107dc@o260945.ingest.sentry.io/5721299",
+    integrations=[DjangoIntegration()],
+
+    traces_sample_rate=1.0,
+    send_default_pii=True
+)
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/

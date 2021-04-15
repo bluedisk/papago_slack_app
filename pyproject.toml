@@ -16,6 +16,7 @@ psycopg2-binary = "2.8.5"
 django-annoying = "^0.10.6"
 fasttext = "^0.9.2"
 requests = "^2.25.1"
+sentry-sdk = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
