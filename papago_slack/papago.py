@@ -60,7 +60,9 @@ CUSTOM_DICTIONARY = {
     'BYT': '치아관리를 시작하도록 하십시오',
     'ND': '나도~~!!!!',
     'GD': '편의점 가자!',
-    '파파고': '왜!',
+    '파파고': '저는 양파고에요',
+    '양파고': '왜요?',
+    '양파고!': '왜!!'
 }
 
 
@@ -133,7 +135,7 @@ def extract_letters(text):
 def recognize_language(text: str) -> (str, str):
     # language checking
 
-    from_codes, _ = model.predict(text, k=2)
+    from_codes, _ = model.predict(text.replace('\n', ' '), k=2)
     candi_major, candi_minor = [code[-2:] for code in from_codes]
     print(f"I] from code is {candi_major}, {candi_minor} : {text}")
     from_code = candi_major

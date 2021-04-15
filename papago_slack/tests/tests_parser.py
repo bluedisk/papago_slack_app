@@ -1,5 +1,5 @@
 import json
-from langdetect import detect
+
 from django.test import TestCase
 
 from papago_slack import papago
@@ -56,9 +56,10 @@ BLOCKS1 = """
       }]
       """
 
-TEXT1="""<!subteam^SRS1R1BNW|@frontend> it's a test in <!here> for <https://google.com|test>
+TEXT1 = """<!subteam^SRS1R1BNW|@frontend> it's a test in <!here> for <https://google.com|test>
 if you know about <@UFGQX1QFK> or <#C0166CJGQ2F|test2> please talk to me :smirk: and `test code`
 """
+
 
 class ParserTestCase(TestCase):
     def test_block_sanitizing(self):
@@ -77,7 +78,8 @@ class ParserTestCase(TestCase):
 
     def test_text_sanitizing(self):
         extras, text, letters = papago.sanitize_text(TEXT1)
-        self.assertEqual(text, "[1] it's a test in [2] for [3]\nif you know about [4] or [5] please talk to me [6] and [7]\n")
+        self.assertEqual(text,
+                         "[1] it's a test in [2] for [3]\nif you know about [4] or [5] please talk to me [6] and [7]\n")
         self.assertEqual(letters, "itsatestinforifyouknowaboutorpleasetalktomeand")
         self.assertListEqual(extras, [
             "<!subteam^SRS1R1BNW|@frontend>",
@@ -93,7 +95,8 @@ class ParserTestCase(TestCase):
         self.assertEqual(text, TEXT1)
 
     def test_language_detection_with_format(self):
-        from_lang, to_lang = papago.recognize_language('파파고\xa0<@UFGQX1QFK>\xa0\xa0바보\xa0<https://google.com>\xa0다람쥐\xa0:smirk:')
+        from_lang, to_lang = papago.recognize_language(
+            '파파고\xa0<@UFGQX1QFK>\xa0\xa0바보\xa0<https://google.com>\xa0다람쥐\xa0:smirk:')
         self.assertEqual(from_lang, 'ko')
         self.assertEqual(to_lang, 'en')
 
@@ -125,4 +128,3 @@ class ParserTestCase(TestCase):
         from_lang, to_lang = papago.recognize_language("Как вас зовут?")
         self.assertEqual(from_lang, 'ru')
         self.assertEqual(to_lang, 'kr')
-
