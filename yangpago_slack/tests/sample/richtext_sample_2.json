@@ -1,0 +1,48 @@
+{
+  "api_app_id": "AUG9D477U",
+  "authed_users": [
+    "UUZBZ2VJL"
+  ],
+  "event": {
+    "blocks": [
+      {
+        "block_id": "WXLbT",
+        "elements": [
+          {
+            "elements": [
+              {
+                "text": "테스트 ",
+                "type": "text"
+              },
+              {
+                "type": "user",
+                "user_id": "UFGQX1QFK"
+              },
+              {
+                "text": " 하하",
+                "type": "text"
+              }
+            ],
+            "type": "rich_text_section"
+          }
+        ],
+        "type": "rich_text"
+      }
+    ],
+    "channel": "C0166CJGQ2F",
+    "channel_type": "channel",
+    "client": "<slack.web.client.WebClient object at 0x7fc98c0aea90>",
+    "client_msg_id": "81737fcf-dfba-4c82-bc03-582c37320a2e",
+    "event_ts": "1595850566.010300",
+    "team": "TFGQX1P17",
+    "text": "테스트 <@UFGQX1QFK> 하하",
+    "ts": "1595850566.010300",
+    "type": "message",
+    "user": "<SlackUser: UFGQX1QFK in [TFGQX1P17] Cutlet-Project>"
+  },
+  "event_id": "Ev017BMBFPST",
+  "event_time": 1595850566,
+  "team_id": "TFGQX1P17",
+  "token": "",
+  "type": "event_callback"
+}

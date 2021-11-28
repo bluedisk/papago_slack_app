@@ -2,24 +2,10 @@ import json
 from pprint import pprint
 
 from django_simple_slack_app import slack_events
-from . import papago
+from yangpago_slack import translator
+from yangpago_slack.translator import DEFAULT_PRIMARY_CODE, DEFAULT_SECONDARY_CODE
+from .language_codes import LANGUAGE_PREFIX_EMOJI
 from .models import TranslateLog
-
-LANG_PREFIX = {
-    'de': ':flag-de: ',
-    'ru': ':flag-ru: ',
-    'vi': ':flag-vi: ',
-    'es': ':flag-es: ',
-    'en': ':flag-us: ',
-    'it': ':flag-it: ',
-    'id': ':flag-id: ',
-    'ja': ':flag-jp: ',
-    'th': ':flag-th: ',
-    'fr': ':flag-fr: ',
-    'ko': ':flag-kr: ',
-    'zh-CN': ':cn: ',
-    'zh-TW': ':cn: ',
-}
 
 DEFAULT_LANG_PREFIX = ':open_mouth: '
 
@@ -51,7 +37,7 @@ class SlackEncoder(json.JSONEncoder):
 
 
 @slack_events.on("message")
-def message_channels(event_data):
+def message_channels(event_data, user):
     event = event_data["event"]
     if "previous_message" in event:
         return
@@ -66,51 +52,61 @@ def message_channels(event_data):
         return
 
     # auth check user
-    if "client" not in event or 'user' not in event:
+    if not user:
         print("unregistered user")
         return
 
-    user = event['user']
-    if event['channel'] not in user.papago.channels:
+    if event['channel'] not in user.yangpago.channels:
         print("not allowed channel for user", user.id, event['channel'])
-        print("not id ", user.papago.channels)
+        print("not id ", user.yangpago.channels)
         return
 
     original_text = event["text"]
     # original_blocks = event["blocks"]
 
     # sanitizing text
-    extras, sanitized_text, letters = papago.sanitize_text(original_text)
+    extras, sanitized_text, letters = translator.sanitize_text(original_text)
     if len(letters) == 0:
         print("skip translate for 0 length text")
         return
 
     # translate
-    from_lang, to_lang = papago.recognize_language(original_text)
-    translated = papago.custom_translate(sanitized_text)
+    # translate_module = translator.papago
+    translate_module = translator.google
 
+    # language selection
+    source_lang_code, confidence = translate_module.recognize_language(original_text)
+    print(f"Detected language {source_lang_code} ({confidence})")
+
+    if source_lang_code != DEFAULT_PRIMARY_CODE:
+        target_lang_code = DEFAULT_PRIMARY_CODE
+    else:
+        target_lang_code = DEFAULT_SECONDARY_CODE
+
+    # custom translate
+    translated = translator.custom_translate(sanitized_text)
+
+    # API transalte
     if not translated:
-        pprint(["TRANS FROM", from_lang, to_lang, sanitized_text])
-        translated = papago.translate(sanitized_text, from_lang, to_lang)
-        pprint(["TRANS TO", from_lang, to_lang, translated])
+        pprint(["TRANS FROM", source_lang_code, target_lang_code, sanitized_text])
+        translated = translate_module.translate(sanitized_text, source_lang_code, target_lang_code)
+        pprint(["TRANS TO", source_lang_code, target_lang_code, translated])
 
     # response
     if translated:
-        translated = papago.desanitize(translated, extras).replace("\n", "\n> ")
-        prefix = LANG_PREFIX.get(from_lang, DEFAULT_LANG_PREFIX)
+        translated = translator.desanitize(translated, extras).replace("\n", "\n> ")
+        prefix = LANGUAGE_PREFIX_EMOJI.get(source_lang_code, DEFAULT_LANG_PREFIX)
         new_text = f'{original_text}\n> {prefix}{translated}'
 
         try:
-            event['client'].chat_update(
-                channel=event["channel"], ts=event["ts"], text=new_text
-            )
+            user.chat_update(ts=event["ts"], text=new_text)
         except Exception as e:
             pprint(e)
 
         TranslateLog.objects.create(
-            team=user.team.papago,
-            user=user.papago,
+            team=user.team.yangpago,
+            user=user.yangpago,
             length=len(original_text),
-            from_lang=from_lang,
-            to_lang=to_lang,
+            source_lang_code=source_lang_code,
+            target_lang_code=target_lang_code,
         )

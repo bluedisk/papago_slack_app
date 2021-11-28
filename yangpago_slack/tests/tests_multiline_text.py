@@ -2,7 +2,7 @@ import json
 
 from django.test import TestCase
 
-from papago_slack import papago
+from yangpago_slack import papago
 
 
 class ParserTestCase(TestCase):

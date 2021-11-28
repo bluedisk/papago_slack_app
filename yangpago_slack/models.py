@@ -1,11 +1,13 @@
 from calendar import monthrange
 from datetime import date
 
+import pycountry
 from annoying.fields import AutoOneToOneField
 from django.db import models
 from django.db.models import Sum
 
 from django_simple_slack_app.models import SlackUser, SlackTeam
+from yangpago_slack.language_codes import LANGUAGE_CODES
 
 
 class ChannelsField(models.TextField):
@@ -27,19 +29,31 @@ class ChannelsField(models.TextField):
         return ','.join(value)
 
 
-class PapagoSlackUser(models.Model):
-    user = AutoOneToOneField(SlackUser, on_delete=models.CASCADE, related_name='papago')
+class YangpagoSlackUser(models.Model):
+    user = AutoOneToOneField(SlackUser, on_delete=models.CASCADE, related_name='yangpago')
     channels = ChannelsField("Activated Channel IDs", default=[], null=False, blank=True)
 
     def __str__(self):
         return f"{self.user.id}"
 
 
-class PapagoSlackTeam(models.Model):
-    team = AutoOneToOneField(SlackTeam, on_delete=models.CASCADE, related_name='papago')
-    plan = models.ForeignKey("PapagoPlan", null=True, blank=True, on_delete=models.SET_NULL)
+class YangpagoSlackTeam(models.Model):
+    team = AutoOneToOneField(SlackTeam, on_delete=models.CASCADE, related_name='yangpago')
+    plan = models.ForeignKey("YangpagoPlan", null=True, blank=True, on_delete=models.SET_NULL)
 
     active = models.BooleanField("Active?", default=True)
+
+    primary_lang = models.CharField("Primary language", max_length=10, choices=LANGUAGE_CODES, default='kr')
+    secondary_lang = models.CharField("Secondary language", max_length=10, choices=LANGUAGE_CODES, default='en')
+
+    ENGINE_CHOICES = (
+        ('papago', 'Papago'),
+        ('google', 'Google Translation')
+    )
+    engine = models.CharField("Translation Engine",
+                              max_length=10,
+                              choices=ENGINE_CHOICES,
+                              default='google')
 
     def __str__(self):
         return f"{self.team}"
@@ -54,7 +68,7 @@ class PapagoSlackTeam(models.Model):
         return query.count(), query.aggregate(letters=Sum('length'))['letters']
 
 
-class PapagoPlan(models.Model):
+class YangpagoPlan(models.Model):
     name = models.CharField("Plan Name", max_length=1024)
 
     updated_at = models.DateTimeField("created time", auto_now=True)
@@ -62,12 +76,13 @@ class PapagoPlan(models.Model):
 
 
 class TranslateLog(models.Model):
-    team = models.ForeignKey("PapagoSlackTeam", on_delete=models.SET_NULL, null=True)
-    user = models.ForeignKey("PapagoSlackUser", on_delete=models.SET_NULL, null=True)
+    team = models.ForeignKey("YangpagoSlackTeam", on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey("YangpagoSlackUser", on_delete=models.SET_NULL, null=True)
 
     length = models.IntegerField("letter count")
 
-    from_lang = models.CharField("From language code", max_length=10)
-    to_lang = models.CharField("To language code", max_length=10)
+    source_lang_code = models.CharField("Source language code", max_length=10)
+    target_lang_code = models.CharField("Target language code", max_length=10)
 
     created_at = models.DateTimeField("created time", auto_now_add=True)
+

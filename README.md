@@ -1,5 +1,5 @@
-# papago_slack_app
-Papago as a Slack App
+# yangpago_slack_app
+Papago (+ Google Translation) as a Slack App
 
 # install (rough)
 ```bash
