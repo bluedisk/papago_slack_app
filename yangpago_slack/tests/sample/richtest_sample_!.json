@@ -1,0 +1,115 @@
+{
+  "api_app_id": "AUG9D477U",
+  "authed_users": [
+    "UUZBZ2VJL"
+  ],
+  "event": {
+    "blocks": [
+      {
+        "block_id": "MAL",
+        "elements": [
+          {
+            "elements": [
+              {
+                "text": "파파고 테스트 ",
+                "type": "text"
+              },
+              {
+                "channel_id": "C0166CJGQ2F",
+                "type": "channel"
+              },
+              {
+                "text": " 채널에서 ",
+                "type": "text"
+              },
+              {
+                "type": "user",
+                "user_id": "UFGQX1QFK"
+              },
+              {
+                "text": " 가 테스트 합니다. ",
+                "type": "text"
+              },
+              {
+                "style": {
+                  "code": true
+                },
+                "text": "test",
+                "type": "text"
+              },
+              {
+                "text": " 의 핵심은 포메팅 감지\n",
+                "type": "text"
+              }
+            ],
+            "type": "rich_text_section"
+          },
+          {
+            "elements": [
+              {
+                "text": "$ code 1234",
+                "type": "text"
+              }
+            ],
+            "type": "rich_text_preformatted"
+          },
+          {
+            "elements": [
+              {
+                "text": "도 인식 가능할까요? ",
+                "type": "text"
+              },
+              {
+                "style": {
+                  "bold": true
+                },
+                "text": "굶은",
+                "type": "text"
+              },
+              {
+                "text": " 글씨나 ",
+                "type": "text"
+              },
+              {
+                "style": {
+                  "strike": true
+                },
+                "text": "취소선도",
+                "type": "text"
+              },
+              {
+                "text": " 체크해 봅니다. ",
+                "type": "text"
+              },
+              {
+                "type": "link",
+                "url": "http://eggpang.net"
+              },
+              {
+                "text": " 같은 URL도 핸들링 해봅니다.",
+                "type": "text"
+              }
+            ],
+            "type": "rich_text_section"
+          }
+        ],
+        "type": "rich_text"
+      }
+    ],
+    "channel": "C0166CJGQ2F",
+    "channel_type": "channel",
+    "client": "<slack.web.client.WebClient object at 0x7fc987364400>",
+    "client_msg_id": "9ef3f695-5db9-46b9-af6f-b60c40964a9d",
+    "event_ts": "1595850402.009700",
+    "team": "TFGQX1P17",
+    "text": "파파고 테스트 <#C0166CJGQ2F|test2> 채널에서 <@UFGQX1QFK> 가 테스트 합니다. `test` 의 핵심은 포메팅 감지\n```$ code 1234```\n도 인식 가능할까요? *굶은* 글씨나 ~취소선도~ 체크해 봅니다. <http://eggpang.net> 같은 URL도 핸들링 해봅니다.",
+    "ts": "1595850402.009700",
+    "type": "message",
+    "user": "<SlackUser: UFGQX1QFK in [TFGQX1P17] Cutlet-Project>"
+  },
+  "event_id": "Ev01852M0GKT",
+  "event_time": 1595850402,
+  "team_id": "TFGQX1P17",
+  "token": "",
+  "type": "event_callback"
+}
