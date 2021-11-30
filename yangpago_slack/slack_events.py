@@ -2,8 +2,9 @@ import json
 from pprint import pprint
 
 from django_simple_slack_app import slack_events
+from django_simple_slack_app.models import SlackUser, SlackTeam
+
 from yangpago_slack import translator
-from yangpago_slack.translator import DEFAULT_PRIMARY_CODE, DEFAULT_SECONDARY_CODE
 from .language_codes import LANGUAGE_PREFIX_EMOJI
 from .models import TranslateLog
 
@@ -37,7 +38,7 @@ class SlackEncoder(json.JSONEncoder):
 
 
 @slack_events.on("message")
-def message_channels(event_data, user):
+def message_channels(event_data, user: SlackUser):
     event = event_data["event"]
     if "previous_message" in event:
         return
@@ -56,35 +57,46 @@ def message_channels(event_data, user):
         print("unregistered user")
         return
 
-    if event['channel'] not in user.yangpago.channels:
+    team = user.team.yangpago
+    user = user.yangpago
+
+    if event['channel'] not in user.channels:
         print("not allowed channel for user", user.id, event['channel'])
-        print("not id ", user.yangpago.channels)
+        print("not id ", user.channels)
         return
 
     original_text = event["text"]
-    # original_blocks = event["blocks"]
 
-    # sanitizing text
-    extras, sanitized_text, letters = translator.sanitize_text(original_text)
-    if len(letters) == 0:
-        print("skip translate for 0 length text")
-        return
+    sanitizing = False
+    translation_engine = team.engine
 
-    # translate
-    # translate_module = translator.papago
-    translate_module = translator.google
+    # translator
+    translate_module = translator.get_translator(translation_engine)
+
+    # # sanitizing text
+    if sanitizing:
+        extras, sanitized_text, letters = translator.sanitize_text(original_text)
+        if len(letters) == 0:
+            print("skip translate for 0 length text")
+            return
+    else:
+        sanitized_text = original_text
+        extras = []
 
     # language selection
     source_lang_code, confidence = translate_module.recognize_language(original_text)
     print(f"Detected language {source_lang_code} ({confidence})")
 
-    if source_lang_code != DEFAULT_PRIMARY_CODE:
-        target_lang_code = DEFAULT_PRIMARY_CODE
+    primary_lang = user.primary_lang or team.primary_lang
+    secondary_lang = user.secondary_lang or team.secondary_lang
+
+    if source_lang_code != primary_lang:
+        target_lang_code = primary_lang
     else:
-        target_lang_code = DEFAULT_SECONDARY_CODE
+        target_lang_code = secondary_lang
 
     # custom translate
-    translated = translator.custom_translate(sanitized_text)
+    translated = translator.custom_translate(original_text)
 
     # API transalte
     if not translated:
@@ -94,18 +106,20 @@ def message_channels(event_data, user):
 
     # response
     if translated:
-        translated = translator.desanitize(translated, extras).replace("\n", "\n> ")
+        if sanitizing:
+            translated = translator.desanitize(translated, extras).replace("\n", "\n> ")
+
         prefix = LANGUAGE_PREFIX_EMOJI.get(source_lang_code, DEFAULT_LANG_PREFIX)
         new_text = f'{original_text}\n> {prefix}{translated}'
 
         try:
-            user.chat_update(ts=event["ts"], text=new_text)
+            user.slack.chat_update(ts=event["ts"], text=new_text)
         except Exception as e:
             pprint(e)
 
         TranslateLog.objects.create(
-            team=user.team.yangpago,
-            user=user.yangpago,
+            team=team,
+            user=user,
             length=len(original_text),
             source_lang_code=source_lang_code,
             target_lang_code=target_lang_code,

@@ -30,20 +30,23 @@ class ChannelsField(models.TextField):
 
 
 class YangpagoSlackUser(models.Model):
-    user = AutoOneToOneField(SlackUser, on_delete=models.CASCADE, related_name='yangpago')
+    slack = AutoOneToOneField(SlackUser, on_delete=models.CASCADE, related_name='yangpago')
     channels = ChannelsField("Activated Channel IDs", default=[], null=False, blank=True)
 
+    primary_lang = models.CharField("Primary language", max_length=10, choices=LANGUAGE_CODES, default=None, null=True)
+    secondary_lang = models.CharField("Secondary language", max_length=10, choices=LANGUAGE_CODES, default=None, null=True)
+
     def __str__(self):
-        return f"{self.user.id}"
+        return f"{self.slack}"
 
 
 class YangpagoSlackTeam(models.Model):
-    team = AutoOneToOneField(SlackTeam, on_delete=models.CASCADE, related_name='yangpago')
+    slack = AutoOneToOneField(SlackTeam, on_delete=models.CASCADE, related_name='yangpago')
     plan = models.ForeignKey("YangpagoPlan", null=True, blank=True, on_delete=models.SET_NULL)
 
     active = models.BooleanField("Active?", default=True)
 
-    primary_lang = models.CharField("Primary language", max_length=10, choices=LANGUAGE_CODES, default='kr')
+    primary_lang = models.CharField("Primary language", max_length=10, choices=LANGUAGE_CODES, default='ko')
     secondary_lang = models.CharField("Secondary language", max_length=10, choices=LANGUAGE_CODES, default='en')
 
     ENGINE_CHOICES = (
@@ -56,7 +59,7 @@ class YangpagoSlackTeam(models.Model):
                               default='google')
 
     def __str__(self):
-        return f"{self.team}"
+        return f"{self.slack}"
 
     def monthly_usage(self):
         today = date.today().year, date.today().month
